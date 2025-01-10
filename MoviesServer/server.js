@@ -1,45 +1,46 @@
+import {pgPool} from './connection.js';
 import express from 'express';
-import pg from 'pg';
+//import pg from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
 const app = express();
 
-const {Client} = pg;
+//const {Client} = pg;
+
+const SQL = {
+    INSERT_MOVIE: "INSERT INTO movies (movie_name, movie_year, genre_name) VALUES ($1, $2, $3)",
+    GET_MOVIE: "SELECT * FROM movies"
+}
+
+try {
+    const result = await pgPool.query(SQL.INSERT_MOVIE, ['Hop', 2011, 'comedy']);
+    console.log(result.rows);
+    
+} catch (error) {
+    console.log(error.message);
+    
+}
 
 // Unused for now.
-app.use(express.urlencoded({extended: true}));
+// app.use(express.urlencoded({extended: true}));
 
 
-app.listen(3001, () => {
-    console.log('The server is running :)');
-});
+// Following codeblock is for connecting to the postgres database and inserts test values with an SQL command to users table.
+//connect();
 
-// Connection credentials.
-const client = new Client({
-    user: process.env.PG_USER,
-    password: process.env.PG_PW,
-    database: process.env.PG_DB,
-    host: process.env.PG_HOST,
-    port: process.env.PG_PORT
-});
+//async function connect() {
 
+//    try {
+//        await client.connect();
+//        await client.query("INSERT INTO users VALUES ('testuser', 'test', 'password123', '2000')");
+//        console.log('Database connected!');
 
-// Following codeblock is for connecting to the postgres database and inserts test values with an SQL command to users.
-connect();
-
-async function connect() {
-
-    try {
-        await client.connect();
-        await client.query("INSERT INTO users VALUES ('testuser', 'test', 'password123', '2000')");
-        console.log('Database connected!');
-
-    } catch (error) {
-        console.log(error.message);
-    }
-}
+//    } catch (error) {
+//        console.log(error.message);
+//    }
+//}
 
 
 // Defining a simple endpoint. In this case, it's root.
@@ -49,7 +50,7 @@ app.get('/', (req, res) => {
     console.log('Root accessed')
 
 // Response for if this endpoint is called (e.g. from browser). Includes 200 (OK) status.
-    res.status(200).send.json('Movie database root endpoint')
+    res.status(200).json('Movie database root endpoint')
 });
 
 
@@ -80,7 +81,7 @@ app.get('/user', (req, res) => {
 
 // When input isn't in the user array. Includes 404 (not found) status.
     else{
-        res.status(404).send.json({error: 'User does not exist.'})
+        res.status(404).json({error: 'User does not exist.'})
     }
 });
 
@@ -121,4 +122,10 @@ app.get('/review', (req, res) => {
 app.get('/favorite', (req, res) => {
 
     res.json('For viewing user favorites');
+});
+
+
+// Starts the server.
+app.listen(3001, () => {
+    console.log('The server is running :)');
 });
